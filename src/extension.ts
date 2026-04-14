@@ -303,27 +303,13 @@ function getCopilotCliPackageName(): string {
 	const platform = process.platform;
 	const arch = process.arch;
 
-	if (platform === 'win32' && arch === 'x64') {
+	if (platform === 'win32') {
 		return '@github/copilot-win32-x64';
-	}
-	if (platform === 'win32' && arch === 'arm64') {
-		return '@github/copilot-win32-arm64';
-	}
-	if (platform === 'linux' && arch === 'x64') {
-		return '@github/copilot-linux-x64';
-	}
-	if (platform === 'linux' && arch === 'arm64') {
-		return '@github/copilot-linux-arm64';
-	}
-	if (platform === 'darwin' && arch === 'x64') {
-		return '@github/copilot-darwin-x64';
-	}
-	if (platform === 'darwin' && arch === 'arm64') {
-		return '@github/copilot-darwin-arm64';
 	}
 
 	throw new Error(`Unsupported platform for Copilot CLI: ${platform}-${arch}`);
 }
+
 
 function describeResult(result: unknown): string {
 	if (!result || typeof result !== 'object') {
