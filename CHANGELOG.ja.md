@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.25
+
+- VS Code エンジンと `@types/vscode` の対応範囲を `^1.100.0` に下げ、古い VS Code 互換エディタでも動作しやすいように調整しました。
+
 ## 0.3.24
 
 - README を更新し、Cursor、Kiro、VSCodium、Antigravity などの VS Code 互換エディタ向けであることを明確にしました。

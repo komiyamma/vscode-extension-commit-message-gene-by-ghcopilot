@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.25
+
+- Lowered the supported VS Code engine and `@types/vscode` compatibility to `^1.100.0` so the extension can work in older VS Code-compatible editors.
+
 ## 0.3.24
 
 - Clarified in the README that the extension is primarily intended for VS Code-compatible editors such as Cursor, Kiro, VSCodium, and Antigravity.
