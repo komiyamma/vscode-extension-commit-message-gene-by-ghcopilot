@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.26
+
+- Clarified the README requirements so users know they should already have GitHub Copilot in VS Code or GitHub Copilot CLI installed and signed in before using the extension.
+
 ## 0.3.25
 
 - Lowered the supported VS Code engine and `@types/vscode` compatibility to `^1.100.0` so the extension can work in older VS Code-compatible editors.
