@@ -4,10 +4,6 @@
 
 - `commitMessageGeneByGhcopilot.*` というこの拡張専用の名前空間に設定キーを分離し、Codex 版とはプロンプト設定を共有しないようにしました。
 
-## 0.3.30
-
-- `commitMessageGene.*` と Codex 版で共有していた設定キーを、この拡張専用の `commitMessageGeneByGhcopilot.*` に分離しました。
-
 ## 0.3.29
 
 - 起動時に Copilot クライアントを事前ウォームアップし、workspace ごとに再利用するようにして、最初のコミットメッセージ生成が速く感じられるようにしました。
