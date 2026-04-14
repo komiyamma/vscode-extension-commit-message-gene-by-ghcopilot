@@ -11,7 +11,7 @@
   "license": "MIT",
   "homepage": "https://github.com/komiyamma/vscode-extension-commit-message-gene-by-ghcopilot",
   "engines": {
-    "vscode": "^1.115.0"
+    "vscode": "^1.100.0"
   },
   "icon": "resources/icons/logo.png",
   "categories": [
@@ -91,7 +91,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "@types/vscode": "^1.115.0",
+    "@types/vscode": "^1.100.0",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "@vscode/test-cli": "^0.0.11",
