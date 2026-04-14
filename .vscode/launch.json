@@ -12,6 +12,9 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
+			"runtimeArgs": [
+				"--enable-proposed-api=komiyamma.commit-message-gene-by-ghcopilot"
+			],
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
