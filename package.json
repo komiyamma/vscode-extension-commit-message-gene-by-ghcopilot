@@ -21,9 +21,6 @@
     "onStartupFinished"
   ],
   "main": "./out/extension.js",
-  "enabledApiProposals": [
-    "contribSourceControlInputBoxMenu"
-  ],
   "contributes": {
     "commands": [
       {
