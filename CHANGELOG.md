@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.36
+
+- Clarified the extension description so it now refers to the GitHub Copilot environment instead of the Codex environment.
+
 ## 0.3.34
 
 - Excluded the logo PSD from the distribution package so the published extension no longer ships that unused asset.
