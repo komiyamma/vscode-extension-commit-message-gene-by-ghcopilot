@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.34
+
+- Excluded the logo PSD from the distribution package so the published extension no longer ships that unused asset.
+
 ## 0.3.33
 
 - Removed the proposed API declaration so the extension no longer requires `contribSourceControlInputBoxMenu` during installation or activation.
