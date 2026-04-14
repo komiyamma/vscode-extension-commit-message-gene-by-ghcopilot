@@ -19,7 +19,7 @@ type GitRepositoryLike = {
 type CopilotClientLike = {
 	start(): Promise<void>;
 	stop(): Promise<Error[]>;
-	createSession(config: { model: string; onPermissionRequest: unknown }): Promise<CopilotSessionLike>;
+	createSession(config?: { model?: string; reasoningEffort?: string; onPermissionRequest: unknown }): Promise<CopilotSessionLike>;
 };
 
 type CopilotSessionLike = {
@@ -70,10 +70,19 @@ export async function activate(context: vscode.ExtensionContext) {
 			const { CopilotClient, approveAll } = await import('@github/copilot-sdk');
 			client = new CopilotClient() as CopilotClientLike;
 			await client.start();
-			session = await client.createSession({
-				model: 'gpt-5',
-				onPermissionRequest: approveAll,
-			});
+			try {
+				session = await client.createSession({
+					model: 'gpt-5-mini',
+					reasoningEffort: 'low',
+					onPermissionRequest: approveAll,
+				});
+			} catch {
+				// If the specified model or reasoningEffort is not supported, fall back to
+				// the user's default Copilot settings (no model or reasoningEffort specified).
+				session = await client.createSession({
+					onPermissionRequest: approveAll,
+				});
+			}
 			if (!session) {
 				throw new Error('Failed to create a GitHub Copilot session.');
 			}
