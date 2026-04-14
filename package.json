@@ -18,6 +18,7 @@
     "SCM Providers"
   ],
   "activationEvents": [
+    "onStartupFinished",
     "onCommand:commit-message-gene-by-ghcopilot.runCopilotCmd"
   ],
   "main": "./out/extension.js",

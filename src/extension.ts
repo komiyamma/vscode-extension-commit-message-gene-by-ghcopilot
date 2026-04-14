@@ -19,6 +19,13 @@ type GitRepositoryLike = {
 type CopilotClientLike = {
 	start(): Promise<void>;
 	stop(): Promise<Error[]>;
+	forceStop?(): Promise<void>;
+	getAuthStatus?(): Promise<{
+		isAuthenticated: boolean;
+		authType?: string;
+		login?: string;
+		statusMessage?: string;
+	}>;
 	createSession(config?: { model?: string; reasoningEffort?: string; onPermissionRequest: unknown }): Promise<CopilotSessionLike>;
 };
 
@@ -26,6 +33,113 @@ type CopilotSessionLike = {
 	sendAndWait(arg: { prompt: string }): Promise<unknown>;
 	disconnect(): Promise<void>;
 };
+
+type WorkspaceClientEntry = {
+	workspaceDir: string;
+	cliPath: string;
+	ready: Promise<CopilotClientLike>;
+	client?: CopilotClientLike;
+};
+
+class CopilotClientPool {
+	private readonly clients = new Map<string, WorkspaceClientEntry>();
+
+	constructor(
+		private readonly debug: (message: string) => void,
+	) {}
+
+	async getClient(workspaceDir: string): Promise<CopilotClientLike> {
+		const key = normalizeFsPath(workspaceDir);
+		const cliPath = resolveCopilotCliPath();
+		const existing = this.clients.get(key);
+		if (existing && existing.cliPath === cliPath) {
+			return existing.ready;
+		}
+
+		if (existing) {
+			this.clients.delete(key);
+			void this.stopEntry(existing);
+		}
+
+		const entry: WorkspaceClientEntry = {
+			workspaceDir,
+			cliPath,
+			ready: Promise.resolve(undefined as never),
+		};
+
+		entry.ready = (async () => {
+			const { CopilotClient } = await import('@github/copilot-sdk');
+			const client = new CopilotClient({ cwd: workspaceDir, cliPath }) as CopilotClientLike;
+			entry.client = client;
+			this.debug(`warming copilot client: workspaceDir=${workspaceDir} cliPath=${cliPath}`);
+			await client.start();
+			this.debug(`copilot client started: workspaceDir=${workspaceDir}`);
+
+			if (typeof client.getAuthStatus === 'function') {
+				try {
+					const authStatus = await client.getAuthStatus();
+					this.debug(
+						`copilot auth status: authenticated=${authStatus.isAuthenticated} authType=${authStatus.authType ?? '(n/a)'} login=${authStatus.login ?? '(n/a)'}`,
+					);
+				} catch (error) {
+					const message = error instanceof Error ? error.message : String(error);
+					this.debug(`copilot auth status check failed: ${message}`);
+				}
+			}
+
+			return client;
+		})().catch(async (error) => {
+			this.clients.delete(key);
+			throw error;
+		});
+
+		this.clients.set(key, entry);
+		return entry.ready;
+	}
+
+	prefetchCurrentWorkspace(): void {
+		void (async () => {
+			const workspaceDir = await resolveWorkspaceDirectory();
+			if (!workspaceDir) {
+				return;
+			}
+			await this.getClient(workspaceDir);
+		})().catch(error => {
+			const message = error instanceof Error ? error.message : String(error);
+			this.debug(`copilot prewarm failed: ${message}`);
+		});
+	}
+
+	async dispose(): Promise<void> {
+		const entries = [...this.clients.values()];
+		this.clients.clear();
+		await Promise.all(entries.map(entry => this.stopEntry(entry)));
+	}
+
+	private async stopEntry(entry: WorkspaceClientEntry): Promise<void> {
+		try {
+			const client = await entry.ready;
+			const errors = await client.stop();
+			if (errors.length > 0) {
+				this.debug(
+					`copilot stop cleanup errors for workspaceDir=${entry.workspaceDir}: ${errors.map(error => error.message).join('; ')}`,
+				);
+				await client.forceStop?.();
+			}
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			this.debug(`copilot stop failed for workspaceDir=${entry.workspaceDir}: ${message}`);
+			try {
+				await entry.client?.forceStop?.();
+			} catch (stopError) {
+				const stopMessage = stopError instanceof Error ? stopError.message : String(stopError);
+				this.debug(`copilot fallback forceStop failed for workspaceDir=${entry.workspaceDir}: ${stopMessage}`);
+			}
+		}
+	}
+}
+
+let clientPool: CopilotClientPool | undefined;
 
 const M = {
 	status: {
@@ -58,13 +172,23 @@ export async function activate(context: vscode.ExtensionContext) {
 		output.appendLine(line);
 	};
 
+	clientPool = new CopilotClientPool(debug);
+	context.subscriptions.push(
+		vscode.window.onDidChangeActiveTextEditor(() => {
+			clientPool?.prefetchCurrentWorkspace();
+		}),
+		vscode.workspace.onDidChangeWorkspaceFolders(() => {
+			clientPool?.prefetchCurrentWorkspace();
+		}),
+	);
+	clientPool.prefetchCurrentWorkspace();
+
 	// Register the command that gathers git context, queries Copilot, and updates the SCM input.
 	const disposable = vscode.commands.registerCommand('commit-message-gene-by-ghcopilot.runCopilotCmd', async () => {
-		let client: CopilotClientLike | undefined;
 		let session: CopilotSessionLike | undefined;
 
 		try {
-			debug(`activation start: node=${process.version} platform=${process.platform} cwd=${process.cwd()}`);
+			debug(`extension start: node=${process.version} platform=${process.platform} cwd=${process.cwd()}`);
 			debug(`env COPILOT_CLI_PATH=${process.env.COPILOT_CLI_PATH ?? '(unset)'}`);
 			const workspaceDir = await resolveWorkspaceDirectory();
 			if (!workspaceDir) {
@@ -78,17 +202,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			const gitPath = await resolveGitPath();
 			debug(`resolved gitPath=${gitPath}`);
-			const gitContext = await collectGitContext(workspaceDir, gitPath);
+			const [client, gitContext] = await Promise.all([
+				clientPool?.getClient(workspaceDir) ?? Promise.reject(new Error('Copilot client pool is not available.')),
+				collectGitContext(workspaceDir, gitPath),
+			]);
 			debug(`gitContext length=${gitContext.length}`);
 			const prompt = buildPrompt(gitContext);
 			debug(`prompt length=${prompt.length}`);
 
-			const { CopilotClient, approveAll } = await import('@github/copilot-sdk');
-			const cliPath = resolveCopilotCliPath();
-			client = new CopilotClient({ cwd: workspaceDir, cliPath }) as CopilotClientLike;
-			debug(`copilot cliPath=${getClientCliPath(client)} cwd=${getClientCwd(client)}`);
-			await client.start();
-			debug('copilot client started');
+			const { approveAll } = await import('@github/copilot-sdk');
 			try {
 				session = await client.createSession({
 					model: 'gpt-5-mini',
@@ -141,18 +263,20 @@ export async function activate(context: vscode.ExtensionContext) {
 				const message = error instanceof Error ? error.message : String(error);
 				output.appendLine(M.commitArea.errorSet(message));
 			}
-			try {
-				await client?.stop();
-			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				output.appendLine(M.commitArea.errorSet(message));
-			}
 			statusSpinner.hide();
 			statusSpinner.text = '';
 		}
 	});
 
 	context.subscriptions.push(disposable);
+}
+
+export async function deactivate() {
+	if (!clientPool) {
+		return;
+	}
+	await clientPool.dispose();
+	clientPool = undefined;
 }
 
 function resolveCopilotCliPath(): string {
@@ -188,24 +312,6 @@ function getCopilotCliPackageName(): string {
 	}
 
 	throw new Error(`Unsupported platform for Copilot CLI: ${platform}-${arch}`);
-}
-
-function getClientCliPath(client: unknown): string {
-	const clientAny = client as {
-		options?: {
-			cliPath?: string;
-		};
-	};
-	return clientAny.options?.cliPath ?? '(unknown)';
-}
-
-function getClientCwd(client: unknown): string {
-	const clientAny = client as {
-		options?: {
-			cwd?: string;
-		};
-	};
-	return clientAny.options?.cwd ?? '(unknown)';
 }
 
 function describeResult(result: unknown): string {
