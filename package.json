@@ -2,7 +2,7 @@
   "publisher": "komiyamma",
   "name": "commit-message-gene-by-ghcopilot",
   "displayName": "Commit Message Gene by GitHub Copilot",
-  "description": "This extension automatically generates commit messages in the Codex environment. It is designed for GitHub Copilot subscribers using VSCodium-family editors such as Antigravity or AWS Kiro.",
+  "description": "This extension automatically generates commit messages in the GitHub Copilot environment. It is designed for GitHub Copilot subscribers using VSCodium-family editors such as Antigravity or AWS Kiro.",
   "version": "0.3.34",
   "repository": {
     "type": "git",
