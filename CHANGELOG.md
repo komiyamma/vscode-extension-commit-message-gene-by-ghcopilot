@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.32
+
+- Simplified the Copilot CLI package lookup so Windows now always uses the `@github/copilot-win32-x64` package, matching the extension's supported environment.
+
 ## 0.3.31
 
 - Separated the prompt setting keys from the Codex variant by moving them to the extension-specific `commitMessageGeneByGhcopilot.*` namespace, so this extension no longer shares those prompt settings with the Codex version.

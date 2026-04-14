@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.32
+
+- Copilot CLI のパッケージ名判定を簡略化し、Windows では常に `@github/copilot-win32-x64` を使うようにして、拡張の対応環境と合わせました。
+
 ## 0.3.31
 
 - `commitMessageGeneByGhcopilot.*` というこの拡張専用の名前空間に設定キーを分離し、Codex 版とはプロンプト設定を共有しないようにしました。
