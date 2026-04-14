@@ -1,23 +1,81 @@
 {
+  "publisher": "komiyamma",
   "name": "commit-message-gene-by-ghcopilot",
-  "displayName": "Commit Message Gene By GHCopilot",
-  "description": "Generate Commit Message",
-  "version": "0.0.1",
+  "displayName": "Commit Message Gene by GitHub Copilot",
+  "description": "Generate commit messages with the GitHub Copilot SDK.",
+  "version": "0.3.23",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/komiyamma/vscode-extension-commit-message-gene-by-ghcopilot.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/komiyamma/vscode-extension-commit-message-gene-by-ghcopilot",
   "engines": {
     "vscode": "^1.115.0"
   },
+  "icon": "resources/icons/logo.png",
   "categories": [
-    "Other"
+    "SCM Providers"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:commit-message-gene-by-ghcopilot.runCopilotCmd"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "commit-message-gene-by-ghcopilot.helloWorld",
-        "title": "Hello World"
+        "command": "commit-message-gene-by-ghcopilot.runCopilotCmd",
+        "title": "Commit message generation by GitHub Copilot",
+        "icon": "$(sparkle-filled)"
       }
-    ]
+    ],
+    "menus": {
+      "scm/inputBox": [
+        {
+          "command": "commit-message-gene-by-ghcopilot.runCopilotCmd",
+          "group": "navigation@-100",
+          "when": "scmProvider == git"
+        }
+      ],
+      "scm/title": [
+        {
+          "command": "commit-message-gene-by-ghcopilot.runCopilotCmd",
+          "group": "navigation@100",
+          "when": "scmProvider == git"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Commit Message Gene by GitHub Copilot",
+      "properties": {
+        "commitMessageGene.prompt.intro.en": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "English instructions shown to GitHub Copilot before the Git context. Each array item becomes a paragraph with a blank line between entries.",
+          "default": [
+            "You are an assistant that drafts commit messages using the provided Git information.",
+            "All required Git data has already been collected below. Do not run additional git commands.",
+            "Follow the Conventional Commits style (type(scope?): subject) for the summary line and add a body only if it helps explain the change. Write the message in English. Do not use Markdown syntax; write in plain text.",
+            "Return only the final commit message proposal."
+          ]
+        },
+        "commitMessageGene.prompt.intro.ja": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Japanese instructions shown to GitHub Copilot before the Git context. Each array item becomes a paragraph with a blank line between entries.",
+          "default": [
+            "あなたは収集されたGit情報でコミットメッセージを作成するアシスタントです。",
+            "必要なGitデータはすべて下に用意済みです。追加のgitコマンドは実行しないでください。",
+            "サマリー行はConventional Commitsスタイル（type(scope?): subject）に従い、必要な場合のみ本文を追加してください。コミットメッセージは日本語で記述してください。Markdown表記は使わずプレーンなテキストで記述してください。",
+            "最終的なコミットメッセージ案だけを返してください。"
+          ]
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -28,14 +86,17 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.115.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/vscode": "^1.115.0",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
-    "eslint": "^9.32.0",
-    "typescript": "^5.9.2",
     "@vscode/test-cli": "^0.0.11",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.32.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@github/copilot-sdk": "^0.2.2"
   }
 }

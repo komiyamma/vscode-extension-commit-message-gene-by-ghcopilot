@@ -1,71 +1,38 @@
-# commit-message-gene-by-ghcopilot README
+[Japanese README](README.ja.md)
 
-This is the README for your extension "commit-message-gene-by-ghcopilot". After writing up a brief description, we recommend including the following sections.
+[![Version](https://img.shields.io/badge/version-v0.3.23-4094ff.svg)](https://marketplace.visualstudio.com/items?itemName=komiyamma.commit-message-gene-by-ghcopilot)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+![Windows 10|11](https://img.shields.io/badge/Windows-_10_|_11-6479ff.svg?logo=windows&logoColor=white)
 
-## Features
+# Commit Message Generator (by GitHub Copilot)
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+VS Code extension that automatically generates a Conventional Commits-style commit message from your repository changes and inserts it into the Source Control input box.  
+It uses the GitHub Copilot SDK to collect a response from GitHub Copilot.
 
-For example if there is an image subfolder under your extension project workspace:
+## Usage
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- From the UI (recommended)
+  - A button is added to the Source Control view title bar and near the commit input box. Click it to run “Commit message generation by GitHub Copilot.”
+  - It appears when the Git provider is active.  
+  [![Commit Input Box Button](images/button.png)](images/button.png)
+  - While generating, the status bar shows “$(sync~spin) Generating commit message...” and it disappears automatically when finished.  
+  [![Commit StatusBar](images/statusbar.png)](images/statusbar.png)
+- From the Command Palette
+  - Press `Ctrl+Shift+P` and type “Commit message generation by GitHub Copilot”.
+  - Or run “Commit message generation by GitHub Copilot” (`commit-message-gene-by-ghcopilot.runCopilotCmd`) directly.
+  - When finished, the generated message is inserted into the commit input box. You can check the execution log in the Output panel “commit message gene by ghcopilot”.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Windows 10/11 with VS Code's Git extension enabled
+- Source Control (SCM) view is open
+- A GitHub Copilot subscription or another Copilot authentication method available to the SDK
+- No separate Copilot CLI installation is required for the Node.js/TypeScript SDK; the SDK bundles it automatically
 
-## Extension Settings
+## Notes
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+- Privacy: the extension itself does not send your code externally, but GitHub Copilot may send repository context to GitHub depending on your Copilot settings. Please review GitHub Copilot's policies.
 
-For example:
+## License
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+MIT License © 2025-2026 komiyamma
