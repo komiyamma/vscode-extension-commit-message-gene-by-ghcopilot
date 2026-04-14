@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.27
+
+- Warmed up the Copilot client at startup and reused it per workspace so the first commit message generation feels faster.
+
 ## 0.3.26
 
 - Clarified the README requirements so users know they should already have GitHub Copilot in VS Code or GitHub Copilot CLI installed and signed in before using the extension.

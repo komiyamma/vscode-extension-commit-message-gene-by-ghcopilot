@@ -3,7 +3,7 @@
   "name": "commit-message-gene-by-ghcopilot",
   "displayName": "Commit Message Gene by GitHub Copilot",
   "description": "This extension automatically generates commit messages in the Codex environment. It is designed for GitHub Copilot subscribers using VSCodium-family editors such as Antigravity or AWS Kiro.",
-  "version": "0.3.26",
+  "version": "0.3.27",
   "repository": {
     "type": "git",
     "url": "https://github.com/komiyamma/vscode-extension-commit-message-gene-by-ghcopilot.git"
@@ -18,8 +18,7 @@
     "SCM Providers"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onCommand:commit-message-gene-by-ghcopilot.runCopilotCmd"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "enabledApiProposals": [
