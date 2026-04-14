@@ -47,6 +47,16 @@ export async function activate(context: vscode.ExtensionContext) {
 	const output = vscode.window.createOutputChannel('commit message gene by ghcopilot');
 	const statusSpinner = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1000);
 	context.subscriptions.push(output, statusSpinner);
+	const debugEnabled = process.env.COMMIT_MESSAGE_GENE_DEBUG === '1';
+
+	const debug = (message: string) => {
+		if (!debugEnabled) {
+			return;
+		}
+		const line = `[debug] ${message}`;
+		console.log(line);
+		output.appendLine(line);
+	};
 
 	// Register the command that gathers git context, queries Copilot, and updates the SCM input.
 	const disposable = vscode.commands.registerCommand('commit-message-gene-by-ghcopilot.runCopilotCmd', async () => {
@@ -54,22 +64,31 @@ export async function activate(context: vscode.ExtensionContext) {
 		let session: CopilotSessionLike | undefined;
 
 		try {
+			debug(`activation start: node=${process.version} platform=${process.platform} cwd=${process.cwd()}`);
+			debug(`env COPILOT_CLI_PATH=${process.env.COPILOT_CLI_PATH ?? '(unset)'}`);
 			const workspaceDir = await resolveWorkspaceDirectory();
 			if (!workspaceDir) {
 				vscode.window.showErrorMessage('No workspace folder is open, so Git context cannot be gathered.');
 				return;
 			}
+			debug(`workspaceDir=${workspaceDir}`);
 
 			statusSpinner.text = M.status.processing();
 			statusSpinner.show();
 
 			const gitPath = await resolveGitPath();
+			debug(`resolved gitPath=${gitPath}`);
 			const gitContext = await collectGitContext(workspaceDir, gitPath);
+			debug(`gitContext length=${gitContext.length}`);
 			const prompt = buildPrompt(gitContext);
+			debug(`prompt length=${prompt.length}`);
 
 			const { CopilotClient, approveAll } = await import('@github/copilot-sdk');
-			client = new CopilotClient() as CopilotClientLike;
+			const cliPath = resolveCopilotCliPath();
+			client = new CopilotClient({ cwd: workspaceDir, cliPath }) as CopilotClientLike;
+			debug(`copilot cliPath=${getClientCliPath(client)} cwd=${getClientCwd(client)}`);
 			await client.start();
+			debug('copilot client started');
 			try {
 				session = await client.createSession({
 					model: 'gpt-5-mini',
@@ -86,9 +105,12 @@ export async function activate(context: vscode.ExtensionContext) {
 			if (!session) {
 				throw new Error('Failed to create a GitHub Copilot session.');
 			}
+			debug('copilot session created');
 
 			const result = await session.sendAndWait({ prompt });
+			debug(`sendAndWait completed: ${describeResult(result)}`);
 			let finalMessage = extractGeneratedMessage(result)?.trim();
+			debug(`finalMessage length=${finalMessage?.length ?? 0}`);
 
 			if (finalMessage) {
 				// If the response is wrapped in triple backticks, strip them first.
@@ -110,6 +132,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
+			debug(`error: ${message}`);
 			reportError(M.errors.failed(message), output);
 		} finally {
 			try {
@@ -130,6 +153,69 @@ export async function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(disposable);
+}
+
+function resolveCopilotCliPath(): string {
+	if (process.env.COPILOT_CLI_PATH?.trim()) {
+		return process.env.COPILOT_CLI_PATH.trim();
+	}
+
+	const packageName = getCopilotCliPackageName();
+	return require.resolve(packageName);
+}
+
+function getCopilotCliPackageName(): string {
+	const platform = process.platform;
+	const arch = process.arch;
+
+	if (platform === 'win32' && arch === 'x64') {
+		return '@github/copilot-win32-x64';
+	}
+	if (platform === 'win32' && arch === 'arm64') {
+		return '@github/copilot-win32-arm64';
+	}
+	if (platform === 'linux' && arch === 'x64') {
+		return '@github/copilot-linux-x64';
+	}
+	if (platform === 'linux' && arch === 'arm64') {
+		return '@github/copilot-linux-arm64';
+	}
+	if (platform === 'darwin' && arch === 'x64') {
+		return '@github/copilot-darwin-x64';
+	}
+	if (platform === 'darwin' && arch === 'arm64') {
+		return '@github/copilot-darwin-arm64';
+	}
+
+	throw new Error(`Unsupported platform for Copilot CLI: ${platform}-${arch}`);
+}
+
+function getClientCliPath(client: unknown): string {
+	const clientAny = client as {
+		options?: {
+			cliPath?: string;
+		};
+	};
+	return clientAny.options?.cliPath ?? '(unknown)';
+}
+
+function getClientCwd(client: unknown): string {
+	const clientAny = client as {
+		options?: {
+			cwd?: string;
+		};
+	};
+	return clientAny.options?.cwd ?? '(unknown)';
+}
+
+function describeResult(result: unknown): string {
+	if (!result || typeof result !== 'object') {
+		return typeof result;
+	}
+	const candidate = result as { type?: unknown; data?: { content?: unknown } };
+	const type = typeof candidate.type === 'string' ? candidate.type : 'object';
+	const content = typeof candidate.data?.content === 'string' ? candidate.data.content : '';
+	return content ? `${type} contentLen=${content.length}` : type;
 }
 
 // Safely copy the generated message into the most relevant SCM commit input.
