@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.3.29
+
+- Warmed up the Copilot client at startup and reused it per workspace so the first commit message generation feels faster.
+- Removed the temporary sign-in notification after Copilot auth checks so the output and status bar stay quiet.
+
 ## 0.3.27
 
 - Warmed up the Copilot client at startup and reused it per workspace so the first commit message generation feels faster.

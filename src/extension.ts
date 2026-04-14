@@ -43,9 +43,11 @@ type WorkspaceClientEntry = {
 
 class CopilotClientPool {
 	private readonly clients = new Map<string, WorkspaceClientEntry>();
+	private readonly notifiedWorkspaces = new Set<string>();
 
 	constructor(
 		private readonly debug: (message: string) => void,
+		private readonly output: vscode.OutputChannel,
 	) {}
 
 	async getClient(workspaceDir: string): Promise<CopilotClientLike> {
@@ -81,6 +83,15 @@ class CopilotClientPool {
 					this.debug(
 						`copilot auth status: authenticated=${authStatus.isAuthenticated} authType=${authStatus.authType ?? '(n/a)'} login=${authStatus.login ?? '(n/a)'}`,
 					);
+					// if (authStatus.isAuthenticated && !this.notifiedWorkspaces.has(key)) {
+					// 	this.notifiedWorkspaces.add(key);
+					// 	const loginName = authStatus.login ? ` (${authStatus.login})` : '';
+					// 	const message = isJapanese()
+					// 		? `GitHub Copilot にログイン済みです${loginName}`
+					// 		: `GitHub Copilot is already signed in${loginName}`;
+					// 	this.output.appendLine(message);
+					// 	vscode.window.setStatusBarMessage(message, 5000);
+					// }
 				} catch (error) {
 					const message = error instanceof Error ? error.message : String(error);
 					this.debug(`copilot auth status check failed: ${message}`);
@@ -172,7 +183,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		output.appendLine(line);
 	};
 
-	clientPool = new CopilotClientPool(debug);
+	clientPool = new CopilotClientPool(debug, output);
 	context.subscriptions.push(
 		vscode.window.onDidChangeActiveTextEditor(() => {
 			clientPool?.prefetchCurrentWorkspace();
