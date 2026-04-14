@@ -28,8 +28,8 @@ GitHub Copilot SDK を使って GitHub Copilot から応答を取得します。
 
 - Windows 10/11 + VS Code の Git 拡張が有効であること
 - ソース管理ビュー（SCM）を開いていること
-- GitHub Copilot サブスクリプション、または SDK で利用できる他の認証方法が使えること
-- Node.js/TypeScript 向け SDK では Copilot CLI の個別インストールは不要です。SDK に同梱されています
+- GitHub Copilot サブスクリプション、または SDK で利用できる対応済みの Copilot 認証方法にログインしておくことを推奨します
+- VS Code の GitHub Copilot か Copilot CLI のどちらかは、事前にインストールしてログインしておく必要があります。普段から使っている状態だとスムーズです
 
 ## メモ
 

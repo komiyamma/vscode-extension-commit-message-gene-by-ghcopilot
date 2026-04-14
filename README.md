@@ -28,8 +28,8 @@ It uses the GitHub Copilot SDK to collect a response from GitHub Copilot.
 
 - Windows 10/11 with VS Code's Git extension enabled
 - Source Control (SCM) view is open
-- A GitHub Copilot subscription or another Copilot authentication method available to the SDK
-- No separate Copilot CLI installation is required for the Node.js/TypeScript SDK; the SDK bundles it automatically
+- A GitHub Copilot subscription or another supported Copilot authentication method is signed in
+- You need to have either GitHub Copilot in VS Code or GitHub Copilot CLI installed and signed in ahead of time. It is smoother if you already use one of them regularly.
 
 ## Notes
 
