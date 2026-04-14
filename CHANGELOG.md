@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.33
+
+- Removed the proposed API declaration so the extension no longer requires `contribSourceControlInputBoxMenu` during installation or activation.
+
 ## 0.3.32
 
 - Simplified the Copilot CLI package lookup so Windows now always uses the `@github/copilot-win32-x64` package, matching the extension's supported environment.

@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.33
+
+- 提案 API の宣言を削除し、拡張のインストールや起動時に `contribSourceControlInputBoxMenu` を要求しないようにしました。
+
 ## 0.3.32
 
 - Copilot CLI のパッケージ名判定を簡略化し、Windows では常に `@github/copilot-win32-x64` を使うようにして、拡張の対応環境と合わせました。
