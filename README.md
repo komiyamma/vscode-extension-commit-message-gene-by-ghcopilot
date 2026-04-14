@@ -4,9 +4,11 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 ![Windows 10|11](https://img.shields.io/badge/Windows-_10_|_11-6479ff.svg?logo=windows&logoColor=white)
 
+Primary target: VS Code-compatible editors such as Cursor, Kiro, VSCodium, and Antigravity.
+
 # Commit Message Generator (by GitHub Copilot)
 
-VS Code extension that automatically generates a Conventional Commits-style commit message from your repository changes and inserts it into the Source Control input box.  
+This extension automatically generates a Conventional Commits-style commit message from your repository changes and inserts it into the Source Control input box.  
 It uses the GitHub Copilot SDK to collect a response from GitHub Copilot.
 
 ## Usage

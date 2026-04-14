@@ -4,9 +4,11 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 ![Windows 10|11](https://img.shields.io/badge/Windows-_10_|_11-6479ff.svg?logo=windows&logoColor=white)
 
+主な対象は VS Code 互換エディタです。特に Cursor、Kiro、VSCodium、Antigravity を想定しています。
+
 # コミットメッセージジェネレーター (by GitHub Copilot)
 
-リポジトリの変更から Conventional Commits 形式のコミットメッセージを自動生成して、ソース管理の入力欄へ挿入する VSCode 拡張です。  
+この拡張は、リポジトリの変更から Conventional Commits 形式のコミットメッセージを自動生成して、ソース管理の入力欄へ挿入します。  
 GitHub Copilot SDK を使って GitHub Copilot から応答を取得します。
 
 ## 使い方
