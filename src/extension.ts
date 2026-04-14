@@ -570,7 +570,7 @@ const DEFAULT_INTRO_JA = [
 function buildPrompt(gitContext: string): string {
 	const config = vscode.workspace.getConfiguration();
 	const japanese = isJapanese();
-	const configKey = japanese ? 'commitMessageGene.prompt.intro.ja' : 'commitMessageGene.prompt.intro.en';
+	const configKey = japanese ? 'commitMessageGeneByGhcopilot.prompt.intro.ja' : 'commitMessageGeneByGhcopilot.prompt.intro.en';
 	const defaultIntro = japanese ? DEFAULT_INTRO_JA : DEFAULT_INTRO_EN;
 	const configuredIntro = config.get<string[]>(configKey);
 	const resolvedIntro = Array.isArray(configuredIntro)

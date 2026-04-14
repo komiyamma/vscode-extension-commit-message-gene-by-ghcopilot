@@ -1,6 +1,6 @@
 [Japanese README](README.ja.md)
 
-[![Version](https://img.shields.io/badge/version-v0.3.29-4094ff.svg)](https://marketplace.visualstudio.com/items?itemName=komiyamma.commit-message-gene-by-ghcopilot)
+[![Version](https://img.shields.io/badge/version-v0.3.31-4094ff.svg)](https://marketplace.visualstudio.com/items?itemName=komiyamma.commit-message-gene-by-ghcopilot)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 ![Windows 10|11](https://img.shields.io/badge/Windows-_10_|_11-6479ff.svg?logo=windows&logoColor=white)
 
@@ -23,6 +23,13 @@ It uses the GitHub Copilot SDK to collect a response from GitHub Copilot.
   - Press `Ctrl+Shift+P` and type “Commit message generation by GitHub Copilot”.
   - Or run “Commit message generation by GitHub Copilot” (`commit-message-gene-by-ghcopilot.runCopilotCmd`) directly.
   - When finished, the generated message is inserted into the commit input box. You can check the execution log in the Output panel “commit message gene by ghcopilot”.
+
+## Settings
+
+This extension uses its own prompt settings namespace so it does not share values with the Codex variant.
+
+- `commitMessageGeneByGhcopilot.prompt.intro.en`
+- `commitMessageGeneByGhcopilot.prompt.intro.ja`
 
 ## Requirements
 

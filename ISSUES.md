@@ -30,7 +30,7 @@ AIモデルの指定やプロンプトの内容など、拡張機能の動作を
 
 ### 2.3. 改善案
 VSCodeの `settings.json` を通じて、ユーザーが以下の項目を設定できるように機能を追加します。
--   `commitMessageGene.prompt.intro.ja` / `commitMessageGene.prompt.intro.en`: 日本語および英語のプロンプトテンプレート。
+-   `commitMessageGeneByGhcopilot.prompt.intro.ja` / `commitMessageGeneByGhcopilot.prompt.intro.en`: 日本語および英語のプロンプトテンプレート。
 -   `commitMessageGene.model`: 使用するAIモデル名。（将来的な追加候補）
 -   `commitMessageGene.maxSectionLength`: 各コンテキストセクションの最大文字数。（将来的な追加候補）
 

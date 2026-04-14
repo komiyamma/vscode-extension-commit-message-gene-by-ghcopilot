@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.3.31
+
+- Separated the prompt setting keys from the Codex variant by moving them to the extension-specific `commitMessageGeneByGhcopilot.*` namespace, so this extension no longer shares those prompt settings with the Codex version.
+
+## 0.3.30
+
+- Separated the prompt setting keys from the Codex variant by moving them to the extension-specific `commitMessageGeneByGhcopilot.*` namespace.
+
 ## 0.3.29
 
 - Warmed up the Copilot client at startup and reused it per workspace so the first commit message generation feels faster.

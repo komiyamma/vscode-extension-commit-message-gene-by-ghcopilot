@@ -1,6 +1,6 @@
 [English README](README.md)
 
-[![Version](https://img.shields.io/badge/version-v0.3.29-4094ff.svg)](https://marketplace.visualstudio.com/items?itemName=komiyamma.commit-message-gene-by-ghcopilot)
+[![Version](https://img.shields.io/badge/version-v0.3.31-4094ff.svg)](https://marketplace.visualstudio.com/items?itemName=komiyamma.commit-message-gene-by-ghcopilot)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 ![Windows 10|11](https://img.shields.io/badge/Windows-_10_|_11-6479ff.svg?logo=windows&logoColor=white)
 
@@ -23,6 +23,13 @@ GitHub Copilot SDK を使って GitHub Copilot から応答を取得します。
   - `Ctrl+Shift+P` → 「Commit message generation by GitHub Copilot」と入力
   - あるいは「Commit message generation by GitHub Copilot」(`commit-message-gene-by-ghcopilot.runCopilotCmd`) を直接実行
   - 完了すると、生成メッセージはコミット入力欄に挿入されます。実行ログは出力パネル「commit message gene by ghcopilot」で確認できます。
+
+## 設定
+
+この拡張は Codex 版と設定値を共有しないように、独自のプロンプト設定名前空間を使います。
+
+- `commitMessageGeneByGhcopilot.prompt.intro.en`
+- `commitMessageGeneByGhcopilot.prompt.intro.ja`
 
 ## 要件
 
