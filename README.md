@@ -35,7 +35,7 @@ This extension uses its own prompt settings namespace so it does not share value
 
 - Windows 10/11 with VS Code's Git extension enabled
 - Source Control (SCM) view is open
-- A GitHub Copilot subscription or another supported Copilot authentication method is signed in
+- A GitHub Copilot subscription or another supported GitHub Copilot authentication method is signed in
 - You need to have either GitHub Copilot in VS Code or GitHub Copilot CLI installed and signed in ahead of time. It is smoother if you already use one of them regularly.
 
 ## Notes
