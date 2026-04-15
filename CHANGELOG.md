@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.37
+
+- Commented out the remaining debug output so normal use no longer spams the Output panel.
+
 ## 0.3.36
 
 - Clarified the extension description so it now refers to the GitHub Copilot environment instead of the Codex environment.

@@ -175,12 +175,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	const debugEnabled = process.env.COMMIT_MESSAGE_GENE_DEBUG === '1';
 
 	const debug = (message: string) => {
+		void message;
 		if (!debugEnabled) {
 			return;
 		}
-		const line = `[debug] ${message}`;
-		console.log(line);
-		output.appendLine(line);
+		// console.log(`[debug] ${message}`);
+		// output.appendLine(`[debug] ${message}`);
 	};
 
 	clientPool = new CopilotClientPool(debug, output);
