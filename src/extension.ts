@@ -543,6 +543,7 @@ const DEFAULT_INTRO_EN = [
 	'You are an assistant that drafts commit messages using the provided Git information.',
 	'All required Git data has already been collected below. Do not run additional git commands.',
 	'Follow the Conventional Commits style (type(scope?): subject) for the summary line and add a body only if it helps explain the change. Write the message in English. Do not use Markdown syntax; write in plain text.',
+	'Do not include co-authorship trailers or attribution lines such as Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>.',
 	'Return only the final commit message proposal.'
 ];
 
@@ -550,6 +551,7 @@ const DEFAULT_INTRO_JA = [
 	'あなたは収集されたGit情報でコミットメッセージを作成するアシスタントです。',
 	'必要なGitデータはすべて下に用意済みです。追加のgitコマンドは実行しないでください。',
 	'サマリー行はConventional Commitsスタイル（type(scope?): subject）に従い、必要な場合のみ本文を追加してください。コミットメッセージは日本語で記述してください。Markdown表記は使わずプレーンなテキストで記述してください。',
+	'Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com> のような共著者トレーラーや署名行は絶対に含めないでください。',
 	'最終的なコミットメッセージ案だけを返してください。'
 ];
 
