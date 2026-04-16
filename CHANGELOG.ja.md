@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.38
+
+- 生成したコミットメッセージに `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` のような共著者トレーラーが入らないようにしました。
+
 ## 0.3.37
 
 - 残っていたデバッグ出力をコメントアウトし、通常利用時に Output パネルへ大量の出力が出ないようにしました。

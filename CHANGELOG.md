@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.38
+
+- Added a safeguard so generated commit messages no longer include co-authorship trailers such as `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`.
+
 ## 0.3.37
 
 - Commented out the remaining debug output so normal use no longer spams the Output panel.
