@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.3.38
+## 0.3.39
 
 - Added a safeguard so generated commit messages no longer include co-authorship trailers such as `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`.
 

@@ -1,6 +1,6 @@
 # Change Log
 
-## 0.3.38
+## 0.3.39
 
 - 生成したコミットメッセージに `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` のような共著者トレーラーが入らないようにしました。
 
