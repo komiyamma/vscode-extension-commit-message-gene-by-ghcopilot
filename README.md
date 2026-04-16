@@ -26,8 +26,6 @@ It uses the GitHub Copilot SDK to collect a response from GitHub Copilot.
 
 ## Settings
 
-This extension uses its own prompt settings namespace so it does not share values with the Codex variant.
-
 - `commitMessageGeneByGhcopilot.prompt.intro.en`
 - `commitMessageGeneByGhcopilot.prompt.intro.ja`
 

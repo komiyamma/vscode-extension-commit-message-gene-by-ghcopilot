@@ -26,8 +26,6 @@ GitHub Copilot SDK を使って GitHub Copilot から応答を取得します。
 
 ## 設定
 
-この拡張は Codex 版と設定値を共有しないように、独自のプロンプト設定名前空間を使います。
-
 - `commitMessageGeneByGhcopilot.prompt.intro.en`
 - `commitMessageGeneByGhcopilot.prompt.intro.ja`
 
