@@ -6,9 +6,9 @@ import * as path from 'path';
 // Promisified wrapper for spawning git commands without direct callback usage.
 const execFileAsync = promisify(execFile);
 // Upper bound for each collected git section to keep prompts bounded.
-const MAX_SECTION_LENGTH = 3000;
+const MAX_SECTION_LENGTH = 4096;
 // Soft cap for git stdout when we stream output to avoid buffer exhaustion.
-const GIT_STDOUT_SOFT_LIMIT = 40000;
+const GIT_STDOUT_SOFT_LIMIT = 4096;
 
 type GitRepositoryLike = {
 	rootUri?: vscode.Uri;

@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.40
+
+- Adjusted the internal Git context collection limits so commit message generation stays stable on larger changes without overflowing the Git output buffer.
+
 ## 0.3.39
 
 - Added a safeguard so generated commit messages no longer include co-authorship trailers such as `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`.
