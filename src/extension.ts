@@ -5,10 +5,14 @@ import * as path from 'path';
 
 // Promisified wrapper for spawning git commands without direct callback usage.
 const execFileAsync = promisify(execFile);
-// Upper bound for each collected git section to keep prompts bounded.
-const MAX_SECTION_LENGTH = 4096;
+// General upper bound for metadata sections to keep prompts compact.
+const MAX_SECTION_LENGTH = 1024;
+// Diff is the most useful signal for commit message generation, so allow more room here.
+const MAX_DIFF_SECTION_LENGTH = 6144;
+// Hard cap for the final prompt sent to Copilot.
+const MAX_PROMPT_LENGTH = 12000;
 // Soft cap for git stdout when we stream output to avoid buffer exhaustion.
-const GIT_STDOUT_SOFT_LIMIT = 4096;
+const GIT_STDOUT_SOFT_LIMIT = 8192;
 
 type GitRepositoryLike = {
 	rootUri?: vscode.Uri;
@@ -512,15 +516,15 @@ async function collectGitContext(cwd: string, gitPath: string): Promise<string> 
 		formatSection('Repository root', repoRoot),
 		formatSection('Current branch', branch),
 		formatSection('Status (--short --branch)', status),
-		formatSection(diffSectionTitle, diffBody),
+		formatSection(diffSectionTitle, diffBody, MAX_DIFF_SECTION_LENGTH),
 		formatSection('Untracked files', untrackedFiles),
 		formatSection('Recent commits', recentCommits),
 	].join('\n\n');
 }
 
 // Wrap a single git data section and ensure bounded length.
-function formatSection(title: string, body: string): string {
-	const safeBody = truncateForPrompt(body || 'N/A', MAX_SECTION_LENGTH);
+function formatSection(title: string, body: string, limit: number = MAX_SECTION_LENGTH): string {
+	const safeBody = truncateForPrompt(body || 'N/A', limit);
 	return `### ${title}\n${safeBody}`;
 }
 
@@ -529,7 +533,9 @@ function truncateForPrompt(text: string, limit: number): string {
 	if (text.length <= limit) {
 		return text;
 	}
-	return `${text.slice(0, limit)}\n... (truncated to ${limit} chars)`;
+	const suffix = `\n... (truncated to ${limit} chars)`;
+	const cutoff = Math.max(limit - suffix.length, 0);
+	return `${text.slice(0, cutoff)}${suffix}`;
 }
 
 // Language detection: whether the VS Code UI language is Japanese.
@@ -568,7 +574,7 @@ function buildPrompt(gitContext: string): string {
 		: [];
 	const introLines = resolvedIntro.length > 0 ? resolvedIntro : defaultIntro;
 
-	return [...introLines, gitContext].join('\n\n');
+	return truncateForPrompt([...introLines, gitContext].join('\n\n'), MAX_PROMPT_LENGTH);
 }
 
 function extractGeneratedMessage(result: unknown): string | undefined {
@@ -667,8 +673,7 @@ async function runGitCommandWithSoftLimit(args: string[], cwd: string, limit: nu
 
 		child.on('close', (code, signal) => {
 			if (truncated) {
-				const suffix = `\n... (truncated to ${limit} chars)`;
-				finishSuccess(`${stdout.trim()}${suffix}`.trim());
+				finishSuccess(truncateForPrompt(stdout.trim(), limit));
 				return;
 			}
 			if (code === 0) {

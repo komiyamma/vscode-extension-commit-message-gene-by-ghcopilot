@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.41
+
+- Tuned the internal Git context and prompt limits for commit message generation so larger diffs stay useful while the overall prompt remains compact and the Git output buffer stays stable.
+
 ## 0.3.40
 
 - Adjusted the internal Git context collection limits so commit message generation stays stable on larger changes without overflowing the Git output buffer.
