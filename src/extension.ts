@@ -263,7 +263,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					finalMessage = finalMessage.slice(2, -2).trim();
 				}
 
-				await setCommitMessage(finalMessage, output, workspaceDir);
+				await setCommitMessage(finalMessage, output, workspaceDir, commandArgs);
 			} else {
 				reportError(M.errors.noResult(), output);
 			}
@@ -326,7 +326,7 @@ function describeResult(result: unknown): string {
 }
 
 // Safely copy the generated message into the most relevant SCM commit input.
-async function setCommitMessage(message: string, output: vscode.OutputChannel, workspaceDir?: string) {
+async function setCommitMessage(message: string, output: vscode.OutputChannel, workspaceDir?: string, commandArgs: unknown[] = []) {
 	try {
 		// Activate the SCM view so the input box is available.
 		await vscode.commands.executeCommand('workbench.view.scm');
@@ -334,17 +334,17 @@ async function setCommitMessage(message: string, output: vscode.OutputChannel, w
 		const gitApi = await getGitApi();
 		if (gitApi) {
 			const repos = (gitApi.repositories ?? []) as GitRepositoryLike[];
-			const targetRepo = selectRepositoryForCommit(repos, workspaceDir);
+			const targetRepo = selectRepositoryForCommit(repos, workspaceDir, commandArgs);
 			if (targetRepo?.inputBox) {
 				targetRepo.inputBox.value = message;
 				output.appendLine(M.commitArea.copilotApi());
 				return;
 			}
 		}
-		// Fallback: scm.inputBox
-		const scmAny = vscode.scm as any;
-		if (scmAny && scmAny.inputBox) {
-			scmAny.inputBox.value = message;
+		// Fallback: only use an input box supplied by the current SCM command context.
+		const contextInputBox = findInputBoxFromCommandArgs(commandArgs);
+		if (contextInputBox) {
+			contextInputBox.value = message;
 			output.appendLine(M.commitArea.copiedScm());
 			return;
 		}
@@ -356,9 +356,21 @@ async function setCommitMessage(message: string, output: vscode.OutputChannel, w
 }
 
 // Locate the repository whose commit input should be updated, prioritising context matches first.
-function selectRepositoryForCommit(repos: GitRepositoryLike[], workspaceDir?: string) {
+function selectRepositoryForCommit(repos: GitRepositoryLike[], workspaceDir?: string, commandArgs: unknown[] = []) {
 	if (!repos || repos.length === 0) {
 		return undefined;
+	}
+
+	for (const fsPath of extractFsPathsFromCommandArgs(commandArgs)) {
+		const byExactContext = findRepoByFsPath(repos, fsPath);
+		if (byExactContext) {
+			return byExactContext;
+		}
+
+		const byContainingContext = findRepoContainingFsPath(repos, fsPath);
+		if (byContainingContext) {
+			return byContainingContext;
+		}
 	}
 
 	if (workspaceDir) {
@@ -399,6 +411,112 @@ function findRepoByFsPath(repos: GitRepositoryLike[], targetFsPath: string) {
 	return repos.find(repo => repo?.rootUri?.fsPath && normalizeFsPath(repo.rootUri.fsPath) === normalizedTarget);
 }
 
+// Retrieve the deepest repository whose root contains the provided filesystem path.
+function findRepoContainingFsPath(repos: GitRepositoryLike[], targetFsPath: string) {
+	const normalizedTarget = normalizeFsPath(targetFsPath);
+	return repos
+		.filter(repo => {
+			if (!repo?.rootUri?.fsPath) {
+				return false;
+			}
+			const normalizedRoot = normalizeFsPath(repo.rootUri.fsPath);
+			return normalizedTarget === normalizedRoot || normalizedTarget.startsWith(`${normalizedRoot}${path.sep}`);
+		})
+		.sort((a, b) => (b.rootUri?.fsPath.length ?? 0) - (a.rootUri?.fsPath.length ?? 0))[0];
+}
+
+// Pull repository or resource paths out of SCM command menu arguments.
+function extractFsPathsFromCommandArgs(commandArgs: unknown[]): string[] {
+	const paths: string[] = [];
+	const seen = new Set<unknown>();
+
+	const visit = (value: unknown, depth: number) => {
+		if (!value || depth > 4) {
+			return;
+		}
+
+		if (typeof value !== 'object') {
+			return;
+		}
+
+		if (seen.has(value)) {
+			return;
+		}
+		seen.add(value);
+
+		if (Array.isArray(value)) {
+			value.forEach(item => visit(item, depth + 1));
+			return;
+		}
+
+		const maybeUri = value as { fsPath?: unknown };
+		if (typeof maybeUri.fsPath === 'string') {
+			paths.push(maybeUri.fsPath);
+		}
+
+		const record = value as Record<string, unknown>;
+		for (const key of ['rootUri', 'resourceUri', 'uri', 'sourceUri']) {
+			visit(record[key], depth + 1);
+		}
+		for (const key of ['sourceControl', 'repository', 'repo']) {
+			visit(record[key], depth + 1);
+		}
+	};
+
+	commandArgs.forEach(arg => visit(arg, 0));
+	return [...new Set(paths)];
+}
+
+// Find an input box only when VS Code supplied it through the invoked SCM command context.
+function findInputBoxFromCommandArgs(commandArgs: unknown[]) {
+	const seen = new Set<unknown>();
+
+	const visit = (value: unknown, depth: number): { value: string } | undefined => {
+		if (!value || depth > 4 || typeof value !== 'object') {
+			return undefined;
+		}
+
+		if (seen.has(value)) {
+			return undefined;
+		}
+		seen.add(value);
+
+		if (Array.isArray(value)) {
+			for (const item of value) {
+				const found = visit(item, depth + 1);
+				if (found) {
+					return found;
+				}
+			}
+			return undefined;
+		}
+
+		const record = value as Record<string, unknown>;
+		const inputBox = record.inputBox as { value?: unknown } | undefined;
+		if (inputBox && typeof inputBox.value === 'string') {
+			return inputBox as { value: string };
+		}
+
+		for (const key of ['sourceControl', 'repository', 'repo']) {
+			const found = visit(record[key], depth + 1);
+			if (found) {
+				return found;
+			}
+		}
+
+		return undefined;
+	};
+
+	for (const arg of commandArgs) {
+		const found = visit(arg, 0);
+		if (found) {
+			return found;
+		}
+	}
+
+	return undefined;
+}
+
 // Report failure to both the output channel and a toast without touching SCM text.
 function reportError(message: string, output: vscode.OutputChannel) {
 	output.appendLine(message);
@@ -427,14 +545,14 @@ async function resolveGitPath(): Promise<string> {
 }
 
 // Determine which repository the extension should treat as the working directory.
-async function resolveWorkspaceDirectory(commandArgs?: unknown[]): Promise<string | undefined> {
-	const commandContextRootUri = getCommandContextRootUri(commandArgs);
-	if (commandContextRootUri) {
-		return commandContextRootUri;
-	}
-
+async function resolveWorkspaceDirectory(commandArgs: unknown[] = []): Promise<string | undefined> {
 	const gitApi = await getGitApi();
 	const repos = (gitApi?.repositories ?? []) as GitRepositoryLike[];
+	const contextRepo = selectRepositoryForCommit(repos, undefined, commandArgs);
+	if (contextRepo?.rootUri?.fsPath) {
+		return contextRepo.rootUri.fsPath;
+	}
+
 	const selectedRepo = repos.find(repo => repo?.ui?.selected);
 	if (selectedRepo?.rootUri?.fsPath) {
 		return selectedRepo.rootUri.fsPath;
@@ -442,7 +560,7 @@ async function resolveWorkspaceDirectory(commandArgs?: unknown[]): Promise<strin
 
 	const activeEditor = vscode.window.activeTextEditor;
 	if (activeEditor) {
-		// Prefer the folder that contains the active editor's file.
+		// アクティブエディターのファイルが属するフォルダーを優先する
 		const containingWorkspace = vscode.workspace.getWorkspaceFolder(activeEditor.document.uri);
 		if (containingWorkspace?.uri?.fsPath) {
 			return containingWorkspace.uri.fsPath;
@@ -454,53 +572,6 @@ async function resolveWorkspaceDirectory(commandArgs?: unknown[]): Promise<strin
 	}
 
 	return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-}
-
-// Prefer a repository root URI supplied by the SCM command context when available.
-function getCommandContextRootUri(commandArgs: unknown[] | undefined): string | undefined {
-	if (!Array.isArray(commandArgs) || commandArgs.length === 0) {
-		return undefined;
-	}
-
-	for (const arg of commandArgs) {
-		const fsPath = extractFsPathFromCommandArg(arg);
-		if (fsPath) {
-			return fsPath;
-		}
-	}
-
-	return undefined;
-}
-
-function extractFsPathFromCommandArg(value: unknown): string | undefined {
-	if (!value || typeof value !== 'object') {
-		return undefined;
-	}
-
-	const candidate = value as {
-		fsPath?: unknown;
-		rootUri?: { fsPath?: unknown };
-		repository?: { rootUri?: { fsPath?: unknown } };
-		provider?: { rootUri?: { fsPath?: unknown } };
-	};
-
-	if (typeof candidate.fsPath === 'string' && candidate.fsPath.length > 0) {
-		return candidate.fsPath;
-	}
-
-	if (typeof candidate.rootUri?.fsPath === 'string' && candidate.rootUri.fsPath.length > 0) {
-		return candidate.rootUri.fsPath;
-	}
-
-	if (typeof candidate.repository?.rootUri?.fsPath === 'string' && candidate.repository.rootUri.fsPath.length > 0) {
-		return candidate.repository.rootUri.fsPath;
-	}
-
-	if (typeof candidate.provider?.rootUri?.fsPath === 'string' && candidate.provider.rootUri.fsPath.length > 0) {
-		return candidate.provider.rootUri.fsPath;
-	}
-
-	return undefined;
 }
 
 // Run a git subcommand and return trimmed stdout or throw a descriptive error.

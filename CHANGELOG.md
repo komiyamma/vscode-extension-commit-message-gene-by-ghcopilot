@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.42
+
+- Improved commit message insertion so commands launched from SCM now prefer the repository and input box from the current command context, which makes multi-root and nested Git setups resolve the correct repository more reliably. Contributed by: [@andreescocard](https://github.com/andreescocard)
+
 ## 0.3.41
 
 - Tuned the internal Git context and prompt limits for commit message generation so larger diffs stay useful while the overall prompt remains compact and the Git output buffer stays stable.
