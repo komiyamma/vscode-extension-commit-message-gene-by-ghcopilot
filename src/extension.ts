@@ -199,13 +199,13 @@ export async function activate(context: vscode.ExtensionContext) {
 	clientPool.prefetchCurrentWorkspace();
 
 	// Register the command that gathers git context, queries Copilot, and updates the SCM input.
-	const disposable = vscode.commands.registerCommand('commit-message-gene-by-ghcopilot.runCopilotCmd', async () => {
+	const disposable = vscode.commands.registerCommand('commit-message-gene-by-ghcopilot.runCopilotCmd', async (...commandArgs: unknown[]) => {
 		let session: CopilotSessionLike | undefined;
 
 		try {
 			debug(`extension start: node=${process.version} platform=${process.platform} cwd=${process.cwd()}`);
 			debug(`env COPILOT_CLI_PATH=${process.env.COPILOT_CLI_PATH ?? '(unset)'}`);
-			const workspaceDir = await resolveWorkspaceDirectory();
+			const workspaceDir = await resolveWorkspaceDirectory(commandArgs);
 			if (!workspaceDir) {
 				vscode.window.showErrorMessage('No workspace folder is open, so Git context cannot be gathered.');
 				return;
@@ -427,7 +427,12 @@ async function resolveGitPath(): Promise<string> {
 }
 
 // Determine which repository the extension should treat as the working directory.
-async function resolveWorkspaceDirectory(): Promise<string | undefined> {
+async function resolveWorkspaceDirectory(commandArgs?: unknown[]): Promise<string | undefined> {
+	const commandContextRootUri = getCommandContextRootUri(commandArgs);
+	if (commandContextRootUri) {
+		return commandContextRootUri;
+	}
+
 	const gitApi = await getGitApi();
 	const repos = (gitApi?.repositories ?? []) as GitRepositoryLike[];
 	const selectedRepo = repos.find(repo => repo?.ui?.selected);
@@ -449,6 +454,53 @@ async function resolveWorkspaceDirectory(): Promise<string | undefined> {
 	}
 
 	return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+}
+
+// Prefer a repository root URI supplied by the SCM command context when available.
+function getCommandContextRootUri(commandArgs: unknown[] | undefined): string | undefined {
+	if (!Array.isArray(commandArgs) || commandArgs.length === 0) {
+		return undefined;
+	}
+
+	for (const arg of commandArgs) {
+		const fsPath = extractFsPathFromCommandArg(arg);
+		if (fsPath) {
+			return fsPath;
+		}
+	}
+
+	return undefined;
+}
+
+function extractFsPathFromCommandArg(value: unknown): string | undefined {
+	if (!value || typeof value !== 'object') {
+		return undefined;
+	}
+
+	const candidate = value as {
+		fsPath?: unknown;
+		rootUri?: { fsPath?: unknown };
+		repository?: { rootUri?: { fsPath?: unknown } };
+		provider?: { rootUri?: { fsPath?: unknown } };
+	};
+
+	if (typeof candidate.fsPath === 'string' && candidate.fsPath.length > 0) {
+		return candidate.fsPath;
+	}
+
+	if (typeof candidate.rootUri?.fsPath === 'string' && candidate.rootUri.fsPath.length > 0) {
+		return candidate.rootUri.fsPath;
+	}
+
+	if (typeof candidate.repository?.rootUri?.fsPath === 'string' && candidate.repository.rootUri.fsPath.length > 0) {
+		return candidate.repository.rootUri.fsPath;
+	}
+
+	if (typeof candidate.provider?.rootUri?.fsPath === 'string' && candidate.provider.rootUri.fsPath.length > 0) {
+		return candidate.provider.rootUri.fsPath;
+	}
+
+	return undefined;
 }
 
 // Run a git subcommand and return trimmed stdout or throw a descriptive error.
