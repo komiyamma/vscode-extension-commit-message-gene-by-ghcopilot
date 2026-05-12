@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.43
+
+- Fixed the extension so it works correctly again in AWS Kiro.
+
 ## 0.3.42
 
 - Improved commit message insertion so commands launched from SCM now prefer the repository and input box from the current command context, which makes multi-root and nested Git setups resolve the correct repository more reliably. Contributed by: [@andreescocard](https://github.com/andreescocard)
