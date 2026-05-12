@@ -20,7 +20,9 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./out/extension.js",
+  "extensionDependencies": [
+    "vscode.git"
+  ],  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
